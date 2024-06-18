@@ -44,6 +44,7 @@ class PostViewModel @Inject constructor(
 
     val data: Flow<PagingData<Post>> = auth.authStateFlow
         .flatMapLatest { (myId, _) ->
+            refreshPosts()
             cached.map { pagingData ->
                 pagingData.map { post ->
                     post.copy(ownedByMe = post.authorId == myId)
@@ -68,7 +69,7 @@ class PostViewModel @Inject constructor(
         loadPosts()
     }
 
-    fun loadPosts() = viewModelScope.launch {
+    private fun loadPosts() = viewModelScope.launch {
         try {
             _dataState.value = FeedModelState(loading = true)
             // repository.stream.cachedIn(viewModelScope).
@@ -78,10 +79,10 @@ class PostViewModel @Inject constructor(
         }
     }
 
-    fun refreshPosts() = viewModelScope.launch {
+    private fun refreshPosts() = viewModelScope.launch {
         try {
             _dataState.value = FeedModelState(refreshing = true)
-//            repository.getAll()
+            repository.getAll()
             _dataState.value = FeedModelState()
         } catch (e: Exception) {
             _dataState.value = FeedModelState(error = true)
