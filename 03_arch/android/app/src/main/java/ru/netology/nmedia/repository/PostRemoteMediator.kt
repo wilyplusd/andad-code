@@ -28,7 +28,13 @@ class PostRemoteMediator(
         try {
             val response = when (loadType) {
                 LoadType.REFRESH -> {
-                    service.getNewer(postRemoteKeyDao.max() ?: 0)
+                    val id = postRemoteKeyDao.max()
+                    if (id == null) {
+                        service.getLatest(state.config.initialLoadSize)
+                    }
+                    else {
+                        service.getAfter(id, state.config.pageSize)
+                    }
                 }
                 LoadType.PREPEND -> {
                     val id = postRemoteKeyDao.max() ?: return MediatorResult.Success(
