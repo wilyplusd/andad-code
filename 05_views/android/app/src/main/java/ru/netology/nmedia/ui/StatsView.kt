@@ -50,7 +50,12 @@ class StatsView @JvmOverloads constructor(
 
     var data: List<Float> = emptyList()
         set(value) {
-            field = value
+            var sum = value.sum()
+            if (sum > 0) {
+                field = value.map { it / sum }
+            } else {
+                field = List(value.size) { 1f / value.size }
+            }
             invalidate()
         }
 
